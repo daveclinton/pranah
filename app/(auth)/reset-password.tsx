@@ -60,7 +60,7 @@ export default function ResetPasswordScreen() {
               console.log(session?.currentTask);
               return;
             }
-            router.replace("/(home)");
+            router.push("/(home)");
           },
         });
       } else if (result.status === "needs_second_factor") {

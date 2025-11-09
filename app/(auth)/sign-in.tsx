@@ -66,7 +66,7 @@ export default function SignInScreen() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        router.replace("/(home)");
+        router.push("/(home)");
       } else {
         console.log("Unhandled sign‑in status:", result);
       }

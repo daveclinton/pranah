@@ -22,7 +22,7 @@ export default function SettingsScreen() {
 
   const handleLogout = async () => {
     await signOut();
-    router.replace("/(auth)/sign-in");
+    router.push("/(auth)");
   };
 
   return (

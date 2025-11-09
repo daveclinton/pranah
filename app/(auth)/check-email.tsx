@@ -56,7 +56,7 @@ export default function VerifyEmailScreen() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        router.replace("/(home)");
+        router.push("/(home)");
       } else {
         console.log("Unexpected result:", result);
       }

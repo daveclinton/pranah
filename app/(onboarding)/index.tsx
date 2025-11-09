@@ -48,7 +48,7 @@ export default function LanguageSelectionScreen() {
   const [_, setIsFirstTime] = useIsFirstTime();
 
   const handleGetStarted = () => {
-    router.replace("/(auth)");
+    router.push("/(auth)");
     console.log("Language selected:", selectedLanguage);
     setIsFirstTime(false);
   };

@@ -17,7 +17,7 @@ export const useSocialAuth = () => {
 
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
-        router.replace("/(home)");
+        router.push("/(home)");
       }
     } catch (err) {
       console.log("Error in social auth", err);
