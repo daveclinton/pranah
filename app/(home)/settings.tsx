@@ -1,4 +1,4 @@
-import { useAuth, useUser } from "@clerk/clerk-expo"; // for Logout + real name
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import {
   FontAwesome5,
   Ionicons,
@@ -27,6 +27,17 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* 🔙 Back button at top */}
+      <View style={styles.topRow}>
+        <TouchableOpacity
+          style={styles.backButton}
+          activeOpacity={0.8}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={22} color="#02271D" />
+        </TouchableOpacity>
+      </View>
+
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.title}>Settings</Text>
 
@@ -87,7 +98,23 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#02271D", // root theme background
+    backgroundColor: "#02271D",
+  },
+  /** 🔙 Back Row */
+  topRow: {
+    width: "100%",
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    justifyContent: "flex-start",
+    marginBottom: 4,
+  },
+  backButton: {
+    backgroundColor: "#C5FC61",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
   },
   scroll: {
     paddingHorizontal: 24,
