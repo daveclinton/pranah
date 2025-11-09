@@ -1,6 +1,8 @@
 import { useIsFirstTime } from "@/lib/use-is-first-time";
+import { useLanguage } from "@/lib/useLanguage";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Image,
   ScrollView,
@@ -11,46 +13,26 @@ import {
 } from "react-native";
 
 const LANGUAGES = [
-  {
-    code: "en",
-    name: "United States (English)",
-    flag: require("@/assets/flags/us.png"),
-  },
-  {
-    code: "bn",
-    name: "Bengali",
-    flag: require("@/assets/flags/bd.png"),
-  },
-  {
-    code: "es",
-    name: "Spanish",
-    flag: require("@/assets/flags/es.png"),
-  },
-  {
-    code: "ta",
-    name: "Tamil",
-    flag: require("@/assets/flags/sg.png"),
-  },
-  {
-    code: "te",
-    name: "Telugu",
-    flag: require("@/assets/flags/in.png"),
-  },
+  { code: "en", nameKey: "english", flag: require("@/assets/flags/us.png") },
+  { code: "bn", nameKey: "bengali", flag: require("@/assets/flags/bd.png") },
+  { code: "es", nameKey: "spanish", flag: require("@/assets/flags/es.png") },
+  { code: "ta", nameKey: "tamil", flag: require("@/assets/flags/sg.png") },
+  { code: "te", nameKey: "telugu", flag: require("@/assets/flags/in.png") },
 ];
 
 export default function LanguageSelectionScreen() {
+  const { t } = useTranslation(); // ✅ translation hook
   const router = useRouter();
-  const [selectedLanguage, setSelectedLanguage] = useState("bn");
-
-  const handleSelect = (code: string) => {
-    setSelectedLanguage(code);
-  };
+  const [currentLang, setLanguage] = useLanguage();
   const [_, setIsFirstTime] = useIsFirstTime();
 
+  const handleSelect = (code: string) => {
+    setLanguage(code);
+  };
+
   const handleGetStarted = () => {
-    router.push("/(auth)");
-    console.log("Language selected:", selectedLanguage);
     setIsFirstTime(false);
+    router.replace("/(auth)");
   };
 
   return (
@@ -59,65 +41,67 @@ export default function LanguageSelectionScreen() {
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>Select Language</Text>
+        {/* 🔹 Title */}
+        <Text style={styles.title}>{t("selectLanguage")}</Text>
 
+        {/* 🔹 Language Options */}
         {LANGUAGES.map((item) => (
           <TouchableOpacity
             key={item.code}
-            onPress={() => handleSelect(item.code)}
             style={[
               styles.languageCard,
-              selectedLanguage === item.code && styles.selectedCard,
+              currentLang === item.code && styles.selectedCard,
             ]}
             activeOpacity={0.8}
+            onPress={() => handleSelect(item.code)}
           >
             <View style={styles.languageRow}>
               <Image source={item.flag} style={styles.flag} />
               <Text
                 style={[
                   styles.languageText,
-                  selectedLanguage === item.code && styles.selectedText,
+                  currentLang === item.code && styles.selectedText,
                 ]}
               >
-                {item.name}
+                {t(item.nameKey)} {/* ✅ uses translation key */}
               </Text>
             </View>
 
             <View
               style={[
                 styles.radioOuter,
-                selectedLanguage === item.code && styles.radioOuterSelected,
+                currentLang === item.code && styles.radioOuterSelected,
               ]}
             >
-              {selectedLanguage === item.code && (
-                <View style={styles.radioInner} />
-              )}
+              {currentLang === item.code && <View style={styles.radioInner} />}
             </View>
           </TouchableOpacity>
         ))}
 
         <View style={{ height: 32 }} />
 
+        {/* 🔹 Get Started Button */}
         <TouchableOpacity
           style={styles.button}
           onPress={handleGetStarted}
           activeOpacity={0.85}
         >
-          <Text style={styles.buttonText}>Get Started</Text>
+          <Text style={styles.buttonText}>{t("getStarted")}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.footerText}>By continuing, you agree to our</Text>
-
+        {/* 🔹 Footer (Agree Notice + Links) */}
+        <Text style={styles.footerText}>{t("agreeNotice")}</Text>
         <View style={styles.footerLinks}>
-          <Text style={styles.link}>Terms and Conditions</Text>
+          <Text style={styles.link}>{t("terms")}</Text>
           <Text style={styles.andText}>&</Text>
-          <Text style={styles.link}>Privacy Policy</Text>
+          <Text style={styles.link}>{t("privacy")}</Text>
         </View>
       </ScrollView>
     </View>
   );
 }
 
+/* ---------- Styles (unchanged) ---------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
