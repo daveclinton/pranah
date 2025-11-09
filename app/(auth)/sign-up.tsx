@@ -1,7 +1,10 @@
+import { useSignUp } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableWithoutFeedback } from "@gorhom/bottom-sheet";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   Dimensions,
   Keyboard,
@@ -15,23 +18,83 @@ import {
   View,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { z } from "zod";
 
 const { height } = Dimensions.get("window");
 
+const signUpSchema = z
+  .object({
+    firstName: z.string().min(1, "First name is required"),
+    middleName: z.string().optional(),
+    phoneNumber: z.string().min(1, "Phone number is required"),
+    email: z
+      .string()
+      .min(1, "Email is required")
+      .email("Invalid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(50, "Password too long"),
+    confirmPassword: z.string().min(1, "Confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type SignUpData = z.infer<typeof signUpSchema>;
+
 export default function SignUpScreen() {
   const router = useRouter();
-
-  const [firstName, setFirstName] = useState("");
-  const [middleName, setMiddleName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const { signUp, isLoaded } = useSignUp();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignUpData>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      firstName: "",
+      middleName: "",
+      phoneNumber: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onSubmit = async (data: SignUpData) => {
+    if (!isLoaded) return;
+    setAuthError(null);
+
+    try {
+      await signUp.create({
+        firstName: data.firstName,
+        lastName: data.middleName || undefined,
+        emailAddress: data.email,
+        password: data.password,
+        phoneNumber: data.phoneNumber,
+      });
+
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+
+      router.push("/(auth)/check-email");
+    } catch (err: any) {
+      console.error("SignUp error:", err);
+      const message =
+        err?.errors?.[0]?.message ||
+        "An unexpected error occurred during sign up.";
+      setAuthError(message);
+    }
+  };
 
   return (
     <View style={styles.container}>
+      {/* Back */}
       <TouchableOpacity
         onPress={() => router.back()}
         style={styles.backButton}
@@ -39,6 +102,7 @@ export default function SignUpScreen() {
       >
         <Ionicons name="arrow-back" size={26} color="#FFFFFF" />
       </TouchableOpacity>
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -57,92 +121,173 @@ export default function SignUpScreen() {
             <Text style={styles.title}>Create Account</Text>
 
             <View style={styles.form}>
-              {/* First Name Field */}
-              <TextInput
-                placeholder="First Name"
-                value={firstName}
-                onChangeText={setFirstName}
-                placeholderTextColor="#888"
-                style={styles.input}
+              {/* First Name */}
+              <Controller
+                control={control}
+                name="firstName"
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <TextInput
+                      placeholder="First Name"
+                      value={value}
+                      onChangeText={onChange}
+                      placeholderTextColor="#888"
+                      style={styles.input}
+                    />
+                    {errors.firstName && (
+                      <Text style={styles.errorText}>
+                        {errors.firstName.message}
+                      </Text>
+                    )}
+                  </>
+                )}
               />
 
-              {/* Middle Name Field */}
-              <TextInput
-                placeholder="Middle Name (Optional)"
-                value={middleName}
-                onChangeText={setMiddleName}
-                placeholderTextColor="#888"
-                style={styles.input}
-              />
-
-              {/* Phone Number Field */}
-              <TextInput
-                placeholder="Phone Number"
-                value={phoneNumber}
-                onChangeText={setPhoneNumber}
-                placeholderTextColor="#888"
-                style={styles.input}
-                keyboardType="phone-pad"
-              />
-
-              {/* Email Field */}
-              <TextInput
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                placeholderTextColor="#888"
-                style={styles.input}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-
-              {/* Password Field */}
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  placeholder="Password"
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholderTextColor="#888"
-                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                  secureTextEntry={!showPassword}
-                />
-                <Pressable
-                  onPress={() => setShowPassword((prev) => !prev)}
-                  style={styles.eyeIconWrapper}
-                >
-                  <Ionicons
-                    name={showPassword ? "eye-off" : "eye"}
-                    size={22}
-                    color="#555"
+              {/* Middle Name */}
+              <Controller
+                control={control}
+                name="middleName"
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    placeholder="Middle Name (Optional)"
+                    value={value}
+                    onChangeText={onChange}
+                    placeholderTextColor="#888"
+                    style={styles.input}
                   />
-                </Pressable>
-              </View>
+                )}
+              />
 
-              {/* Confirm Password Field */}
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  placeholder="Confirm Password"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  placeholderTextColor="#888"
-                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                  secureTextEntry={!showConfirmPassword}
-                />
-                <Pressable
-                  onPress={() => setShowConfirmPassword((prev) => !prev)}
-                  style={styles.eyeIconWrapper}
-                >
-                  <Ionicons
-                    name={showConfirmPassword ? "eye-off" : "eye"}
-                    size={22}
-                    color="#555"
-                  />
-                </Pressable>
-              </View>
+              {/* Phone Number */}
+              <Controller
+                control={control}
+                name="phoneNumber"
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <TextInput
+                      placeholder="Phone Number"
+                      value={value}
+                      onChangeText={onChange}
+                      placeholderTextColor="#888"
+                      style={styles.input}
+                      keyboardType="phone-pad"
+                    />
+                    {errors.phoneNumber && (
+                      <Text style={styles.errorText}>
+                        {errors.phoneNumber.message}
+                      </Text>
+                    )}
+                  </>
+                )}
+              />
+
+              {/* Email */}
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <TextInput
+                      placeholder="Email"
+                      value={value}
+                      onChangeText={onChange}
+                      placeholderTextColor="#888"
+                      style={styles.input}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
+                    {errors.email && (
+                      <Text style={styles.errorText}>
+                        {errors.email.message}
+                      </Text>
+                    )}
+                  </>
+                )}
+              />
+
+              {/* Password */}
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <View style={styles.passwordContainer}>
+                      <TextInput
+                        placeholder="Password"
+                        value={value}
+                        onChangeText={onChange}
+                        placeholderTextColor="#888"
+                        style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                        secureTextEntry={!showPassword}
+                      />
+                      <Pressable
+                        onPress={() => setShowPassword((p) => !p)}
+                        style={styles.eyeIconWrapper}
+                      >
+                        <Ionicons
+                          name={showPassword ? "eye-off" : "eye"}
+                          size={22}
+                          color="#555"
+                        />
+                      </Pressable>
+                    </View>
+                    {errors.password && (
+                      <Text style={styles.errorText}>
+                        {errors.password.message}
+                      </Text>
+                    )}
+                  </>
+                )}
+              />
+
+              {/* Confirm Password */}
+              <Controller
+                control={control}
+                name="confirmPassword"
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <View style={styles.passwordContainer}>
+                      <TextInput
+                        placeholder="Confirm Password"
+                        value={value}
+                        onChangeText={onChange}
+                        placeholderTextColor="#888"
+                        style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                        secureTextEntry={!showConfirmPassword}
+                      />
+                      <Pressable
+                        onPress={() => setShowConfirmPassword((p) => !p)}
+                        style={styles.eyeIconWrapper}
+                      >
+                        <Ionicons
+                          name={showConfirmPassword ? "eye-off" : "eye"}
+                          size={22}
+                          color="#555"
+                        />
+                      </Pressable>
+                    </View>
+                    {errors.confirmPassword && (
+                      <Text style={styles.errorText}>
+                        {errors.confirmPassword.message}
+                      </Text>
+                    )}
+                  </>
+                )}
+              />
+
+              {/* Server/Auth error */}
+              {authError && <Text style={styles.errorText}>{authError}</Text>}
 
               {/* Sign Up Button */}
-              <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>Sign Up</Text>
+              <TouchableOpacity
+                style={[styles.button, isSubmitting && { opacity: 0.7 }]}
+                activeOpacity={0.9}
+                onPress={handleSubmit(onSubmit)}
+                disabled={isSubmitting}
+              >
+                <Text style={styles.buttonText}>
+                  {isSubmitting ? "Creating Account..." : "Sign Up"}
+                </Text>
               </TouchableOpacity>
 
               {/* Footer */}
@@ -163,6 +308,9 @@ export default function SignUpScreen() {
   );
 }
 
+// ---------------------------
+// Styles
+// ---------------------------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -196,6 +344,12 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     fontSize: 16,
     color: "#000",
+  },
+  errorText: {
+    color: "#E63946",
+    fontSize: 13,
+    marginBottom: 10,
+    marginTop: -8,
   },
   passwordContainer: {
     flexDirection: "row",

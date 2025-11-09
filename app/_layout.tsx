@@ -3,7 +3,6 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
-import { APIProvider } from "@/components/api-provider";
 import { tokenCache } from "@/lib/auth";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import FlashMessage from "react-native-flash-message";
@@ -21,14 +20,12 @@ function Providers({ children }: { children: React.ReactNode }) {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
-        <APIProvider>
-          <BottomSheetModalProvider>
-            <SafeAreaView style={{ flex: 1, backgroundColor: "#02271D" }}>
-              {children}
-              <FlashMessage position="top" />
-            </SafeAreaView>
-          </BottomSheetModalProvider>
-        </APIProvider>
+        <BottomSheetModalProvider>
+          <SafeAreaView style={{ flex: 1, backgroundColor: "#02271D" }}>
+            {children}
+            <FlashMessage position="top" />
+          </SafeAreaView>
+        </BottomSheetModalProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>
   );

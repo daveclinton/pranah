@@ -1,3 +1,5 @@
+import { useIsFirstTime } from "@/lib/use-is-first-time";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Image,
@@ -37,15 +39,18 @@ const LANGUAGES = [
 ];
 
 export default function LanguageSelectionScreen() {
+  const router = useRouter();
   const [selectedLanguage, setSelectedLanguage] = useState("bn");
 
   const handleSelect = (code: string) => {
     setSelectedLanguage(code);
   };
+  const [_, setIsFirstTime] = useIsFirstTime();
 
   const handleGetStarted = () => {
+    router.replace("/(auth)");
     console.log("Language selected:", selectedLanguage);
-    // You might navigate or save selection here
+    setIsFirstTime(false);
   };
 
   return (

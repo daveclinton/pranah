@@ -1,54 +1,79 @@
+import { useSocialAuth } from "@/lib/use-social-auth";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AuthWelcome() {
   const router = useRouter();
+  const { handleSocialAuth, isLoading } = useSocialAuth();
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Top Section with Logo & Icon */}
       <View style={styles.topSection}>
         <View style={styles.shrimpContainer}>
           <Image
-            source={require("../../assets/scan-icon.png")}
+            source={require("@/assets/scan-icon.png")}
             style={styles.scanIcon}
             resizeMode="contain"
           />
-
           <Image
-            source={require("../../assets/shrimp.png")}
+            source={require("@/assets/shrimp.png")}
             style={styles.shrimpImage}
             resizeMode="contain"
           />
         </View>
       </View>
 
+      {/* Bottom Section */}
       <View style={styles.bottomSection}>
         <Text style={styles.heading}>Your Digital Aqua Farming Assistant.</Text>
 
+        {/* Email Sign Up */}
         <TouchableOpacity
           style={styles.primaryButton}
           onPress={() => router.push("/(auth)/sign-up")}
+          activeOpacity={0.8}
         >
           <Text style={styles.primaryButtonText}>Continue with Email</Text>
         </TouchableOpacity>
 
+        {/* Divider */}
         <View style={styles.dividerRow}>
           <View style={styles.divider} />
           <Text style={styles.orText}>Or</Text>
           <View style={styles.divider} />
         </View>
 
-        <TouchableOpacity style={styles.googleButton}>
-          <Image
-            source={require("../../assets/google-icon.png")}
-            style={styles.googleIcon}
-          />
-          <Text style={styles.googleText}>Continue with Google</Text>
+        {/* Google OAuth Button */}
+        <TouchableOpacity
+          style={[styles.googleButton, isLoading && { opacity: 0.7 }]}
+          onPress={() => handleSocialAuth("oauth_google")}
+          activeOpacity={0.9}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#02271D" />
+          ) : (
+            <>
+              <Image
+                source={require("@/assets/google-icon.png")}
+                style={styles.googleIcon}
+              />
+              <Text style={styles.googleText}>Continue with Google</Text>
+            </>
+          )}
         </TouchableOpacity>
 
+        {/* Sign-In Footer */}
         <TouchableOpacity onPress={() => router.push("/(auth)/sign-in")}>
           <Text style={styles.footerText}>
             Already have an account?{" "}

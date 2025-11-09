@@ -1,6 +1,9 @@
+import { useSignIn } from "@clerk/clerk-expo";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   Dimensions,
   Keyboard,
@@ -14,19 +17,70 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { z } from "zod";
 
 const { height } = Dimensions.get("window");
 
+const signinSchema = z.object({
+  emailAddress: z
+    .string()
+    .min(1, "Email is required")
+    .email("Invalid email address"),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .min(8, "Password must be at least 8 characters"),
+  remember: z.boolean(),
+});
+
+type SigninFormData = z.infer<typeof signinSchema>;
+
 export default function SignInScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { signIn, setActive, isLoaded } = useSignIn();
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SigninFormData>({
+    resolver: zodResolver(signinSchema),
+    defaultValues: {
+      emailAddress: "",
+      password: "",
+      remember: false,
+    },
+  });
+
+  const onSubmit = async (data: SigninFormData) => {
+    if (!isLoaded) return;
+    setAuthError(null);
+
+    try {
+      const result = await signIn.create({
+        identifier: data.emailAddress,
+        password: data.password,
+      });
+
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        router.replace("/(home)");
+      } else {
+        console.log("Unhandled sign‑in status:", result);
+      }
+    } catch (err: any) {
+      console.error("Sign‑in error:", err);
+      const message =
+        err?.errors?.[0]?.message ||
+        "An unexpected error occurred. Please try again.";
+      setAuthError(message);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      {/* Back Button */}
       <TouchableOpacity
         onPress={() => router.back()}
         style={styles.backButton}
@@ -34,6 +88,7 @@ export default function SignInScreen() {
       >
         <Ionicons name="arrow-back-outline" size={24} color="white" />
       </TouchableOpacity>
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -52,57 +107,99 @@ export default function SignInScreen() {
             <Text style={styles.title}>Welcome Back</Text>
 
             <View style={styles.form}>
-              {/* Email */}
-              <TextInput
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                placeholderTextColor="#888"
-                style={styles.input}
-                keyboardType="email-address"
-                autoCapitalize="none"
+              {/* Email field */}
+              <Controller
+                control={control}
+                name="emailAddress"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <>
+                    <TextInput
+                      placeholder="Enter your email"
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      placeholderTextColor="#888"
+                      style={styles.input}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
+                    {errors.emailAddress && (
+                      <Text style={styles.errorText}>
+                        {errors.emailAddress.message}
+                      </Text>
+                    )}
+                  </>
+                )}
               />
 
-              {/* Password */}
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  placeholder="Password"
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholderTextColor="#888"
-                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                  secureTextEntry={!showPassword}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword((prev) => !prev)}
-                  style={styles.eyeIconWrapper}
-                >
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={22}
-                    color="#555"
-                  />
-                </TouchableOpacity>
-              </View>
+              {/* Password field */}
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <>
+                    <View style={styles.passwordContainer}>
+                      <TextInput
+                        placeholder="Password"
+                        value={value}
+                        onChangeText={onChange}
+                        onBlur={onBlur}
+                        placeholderTextColor="#888"
+                        style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                        secureTextEntry={!showPassword}
+                        autoCapitalize="none"
+                      />
+                      <TouchableOpacity
+                        onPress={() => setShowPassword((p) => !p)}
+                        style={styles.eyeIconWrapper}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons
+                          name={
+                            showPassword ? "eye-off-outline" : "eye-outline"
+                          }
+                          size={22}
+                          color="#555"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    {errors.password && (
+                      <Text style={styles.errorText}>
+                        {errors.password.message}
+                      </Text>
+                    )}
+                  </>
+                )}
+              />
 
-              {/* Remember + Forgot */}
+              {/* Remember me + Forgot password */}
               <View style={styles.rowBetween}>
-                <TouchableOpacity
-                  onPress={() => setRemember(!remember)}
-                  style={styles.rememberContainer}
-                  activeOpacity={0.7}
-                >
-                  {remember ? (
-                    <Ionicons
-                      name="checkbox-outline"
-                      size={20}
-                      color="#C5FC61"
-                    />
-                  ) : (
-                    <Ionicons name="square-outline" size={20} color="#7BA78A" />
+                <Controller
+                  control={control}
+                  name="remember"
+                  render={({ field: { value, onChange } }) => (
+                    <TouchableOpacity
+                      onPress={() => onChange(!value)}
+                      style={styles.rememberContainer}
+                      activeOpacity={0.7}
+                    >
+                      {value ? (
+                        <Ionicons
+                          name="checkbox-outline"
+                          size={20}
+                          color="#C5FC61"
+                        />
+                      ) : (
+                        <Ionicons
+                          name="square-outline"
+                          size={20}
+                          color="#7BA78A"
+                        />
+                      )}
+                      <Text style={styles.rememberText}>Remember Me</Text>
+                    </TouchableOpacity>
                   )}
-                  <Text style={styles.rememberText}>Remember Me</Text>
-                </TouchableOpacity>
+                />
 
                 <TouchableOpacity
                   onPress={() => router.push("/(auth)/forgot-password")}
@@ -111,13 +208,19 @@ export default function SignInScreen() {
                 </TouchableOpacity>
               </View>
 
-              {/* Sign‑in button */}
+              {/* Clerk/Auth error */}
+              {authError && <Text style={styles.errorText}>{authError}</Text>}
+
+              {/* Submit button */}
               <TouchableOpacity
-                style={styles.button}
+                style={[styles.button, isSubmitting && { opacity: 0.7 }]}
                 activeOpacity={0.9}
-                onPress={() => console.log("Attempt login")}
+                disabled={isSubmitting}
+                onPress={handleSubmit(onSubmit)}
               >
-                <Text style={styles.buttonText}>Sign In</Text>
+                <Text style={styles.buttonText}>
+                  {isSubmitting ? "Signing In..." : "Sign In"}
+                </Text>
               </TouchableOpacity>
 
               {/* Sign‑up footer */}
@@ -179,6 +282,12 @@ const styles = StyleSheet.create({
   eyeIconWrapper: {
     position: "absolute",
     right: 12,
+  },
+  errorText: {
+    color: "#E63946",
+    fontSize: 13,
+    marginBottom: 10,
+    marginTop: -8,
   },
   rowBetween: {
     flexDirection: "row",
