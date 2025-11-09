@@ -1,24 +1,63 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import "react-native-reanimated";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { APIProvider } from "@/components/api-provider";
+import { tokenCache } from "@/lib/auth";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import FlashMessage from "react-native-flash-message";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: "(home)",
 };
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
+function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <KeyboardProvider>
+        <APIProvider>
+          <BottomSheetModalProvider>
+            <SafeAreaView style={{ flex: 1, backgroundColor: "#02271D" }}>
+              {children}
+              <FlashMessage position="top" />
+            </SafeAreaView>
+          </BottomSheetModalProvider>
+        </APIProvider>
+      </KeyboardProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+      <ClerkLoaded>
+        <Providers>
+          <Stack>
+            <Stack.Screen
+              name="(onboarding)"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="(home)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            {/* <Stack.Screen
+                name="sso-callback"
+                options={{ headerShown: false }}
+              /> */}
+            <Stack.Screen
+              name="modal"
+              options={{ presentation: "modal", title: "Modal" }}
+            />
+          </Stack>
+          <StatusBar style="auto" />
+        </Providers>
+      </ClerkLoaded>
+    </ClerkProvider>
   );
 }
