@@ -8,7 +8,7 @@ export default function SSOCallbackScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <Image
-          source={require("@assets/images/icon.png")}
+          source={require("@/assets/images/icon.png")}
           style={styles.logo}
           contentFit="contain"
           transition={200}
