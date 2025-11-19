@@ -91,7 +91,7 @@ export default function SignUpScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Back */}
+ 
       <TouchableOpacity
         onPress={() => router.back()}
         style={styles.backButton}
@@ -118,7 +118,7 @@ export default function SignUpScreen() {
             <Text style={styles.title}>{t("createAccount")}</Text>
 
             <View style={styles.form}>
-              {/* First Name */}
+           
               <Controller
                 control={control}
                 name="firstName"
@@ -140,7 +140,6 @@ export default function SignUpScreen() {
                 )}
               />
 
-              {/* Middle Name */}
               <Controller
                 control={control}
                 name="middleName"
@@ -178,7 +177,7 @@ export default function SignUpScreen() {
                 )}
               />
 
-              {/* Email */}
+        
               <Controller
                 control={control}
                 name="email"
@@ -202,7 +201,7 @@ export default function SignUpScreen() {
                 )}
               />
 
-              {/* Password */}
+         
               <Controller
                 control={control}
                 name="password"
@@ -237,7 +236,7 @@ export default function SignUpScreen() {
                 )}
               />
 
-              {/* Confirm Password */}
+              
               <Controller
                 control={control}
                 name="confirmPassword"
@@ -272,10 +271,10 @@ export default function SignUpScreen() {
                 )}
               />
 
-              {/* Server/Auth error */}
+        
               {authError && <Text style={styles.errorText}>{authError}</Text>}
 
-              {/* Sign Up Button */}
+     
               <TouchableOpacity
                 style={[styles.button, isSubmitting && { opacity: 0.7 }]}
                 activeOpacity={0.9}
@@ -288,7 +287,7 @@ export default function SignUpScreen() {
 
               </TouchableOpacity>
 
-              {/* Footer */}
+       
               <TouchableOpacity
                 onPress={() => router.push("/(auth)/sign-in")}
                 style={{ marginTop: 20 }}
