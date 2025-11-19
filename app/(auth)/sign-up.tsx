@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   Keyboard,
@@ -22,34 +23,30 @@ import { z } from "zod";
 
 const { height } = Dimensions.get("window");
 
-const signUpSchema = z
-  .object({
-    firstName: z.string().min(1, "First name is required"),
-    middleName: z.string().optional(),
-    phoneNumber: z.string().min(1, "Phone number is required"),
-    email: z
-      .string()
-      .min(1, "Email is required")
-      .email("Invalid email address"),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(50, "Password too long"),
-    confirmPassword: z.string().min(1, "Confirm your password"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
-type SignUpData = z.infer<typeof signUpSchema>;
-
 export default function SignUpScreen() {
   const router = useRouter();
   const { signUp, isLoaded } = useSignUp();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const { t } = useTranslation();
+
+  const signUpSchema = z
+    .object({
+      firstName: z.string().min(1, t("firstNameRequired")),
+      middleName: z.string().optional(),
+      phoneNumber: z.string().min(1, t("phoneRequired")),
+      email: z.string().min(1, t("emailRequired")).email(t("invalidEmail")),
+      password: z.string().min(8, t("passwordShort")).max(50, t("passwordLong")),
+      confirmPassword: z.string().min(1, t("confirmPasswordRequired")),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("passwordsDoNotMatch"),
+      path: ["confirmPassword"],
+    });
+
+  type SignUpData = z.infer<typeof signUpSchema>;
+
 
   const {
     control,
@@ -118,7 +115,7 @@ export default function SignUpScreen() {
               paddingBottom: height * 0.05,
             }}
           >
-            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.title}>{t("createAccount")}</Text>
 
             <View style={styles.form}>
               {/* First Name */}
@@ -128,7 +125,7 @@ export default function SignUpScreen() {
                 render={({ field: { onChange, value } }) => (
                   <>
                     <TextInput
-                      placeholder="First Name"
+                      placeholder={t("firstName")}
                       value={value}
                       onChangeText={onChange}
                       placeholderTextColor="#888"
@@ -149,7 +146,7 @@ export default function SignUpScreen() {
                 name="middleName"
                 render={({ field: { onChange, value } }) => (
                   <TextInput
-                    placeholder="Middle Name (Optional)"
+                    placeholder={t("middleNameOptional")}
                     value={value}
                     onChangeText={onChange}
                     placeholderTextColor="#888"
@@ -165,7 +162,7 @@ export default function SignUpScreen() {
                 render={({ field: { onChange, value } }) => (
                   <>
                     <TextInput
-                      placeholder="Phone Number"
+                      placeholder={t("phoneNumber")}
                       value={value}
                       onChangeText={onChange}
                       placeholderTextColor="#888"
@@ -188,7 +185,7 @@ export default function SignUpScreen() {
                 render={({ field: { onChange, value } }) => (
                   <>
                     <TextInput
-                      placeholder="Email"
+                      placeholder={t("enterEmail")}
                       value={value}
                       onChangeText={onChange}
                       placeholderTextColor="#888"
@@ -213,7 +210,7 @@ export default function SignUpScreen() {
                   <>
                     <View style={styles.passwordContainer}>
                       <TextInput
-                        placeholder="Password"
+                        placeholder={t("password")}
                         value={value}
                         onChangeText={onChange}
                         placeholderTextColor="#888"
@@ -248,7 +245,7 @@ export default function SignUpScreen() {
                   <>
                     <View style={styles.passwordContainer}>
                       <TextInput
-                        placeholder="Confirm Password"
+                        placeholder={t("confirmPassword")}
                         value={value}
                         onChangeText={onChange}
                         placeholderTextColor="#888"
@@ -286,8 +283,9 @@ export default function SignUpScreen() {
                 disabled={isSubmitting}
               >
                 <Text style={styles.buttonText}>
-                  {isSubmitting ? "Creating Account..." : "Sign Up"}
+                  {isSubmitting ? t("creatingAccount") : t("signUp")}
                 </Text>
+
               </TouchableOpacity>
 
               {/* Footer */}
@@ -296,9 +294,10 @@ export default function SignUpScreen() {
                 style={{ marginTop: 20 }}
               >
                 <Text style={styles.footerText}>
-                  Already have an account?{" "}
-                  <Text style={styles.footerLink}>Login</Text>
+                  {t("alreadyHaveAccount")}{" "}
+                  <Text style={styles.footerLink}>{t("login")}</Text>
                 </Text>
+
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -308,9 +307,7 @@ export default function SignUpScreen() {
   );
 }
 
-// ---------------------------
-// Styles
-// ---------------------------
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

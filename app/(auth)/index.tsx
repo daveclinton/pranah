@@ -1,6 +1,7 @@
 import { useSocialAuth } from "@/lib/use-social-auth";
 import { useRouter } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Image,
@@ -14,10 +15,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function AuthWelcome() {
   const router = useRouter();
   const { handleSocialAuth, isLoading } = useSocialAuth();
+  const { t } = useTranslation(); 
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Top Section with Logo & Icon */}
       <View style={styles.topSection}>
         <View style={styles.shrimpContainer}>
           <Image
@@ -32,28 +33,20 @@ export default function AuthWelcome() {
           />
         </View>
       </View>
-
-      {/* Bottom Section */}
       <View style={styles.bottomSection}>
-        <Text style={styles.heading}>Your Digital Aqua Farming Assistant.</Text>
-
-        {/* Email Sign Up */}
+        <Text style={styles.heading}>{t("tagline")}</Text>
         <TouchableOpacity
           style={styles.primaryButton}
           onPress={() => router.push("/(auth)/sign-up")}
           activeOpacity={0.8}
         >
-          <Text style={styles.primaryButtonText}>Continue with Email</Text>
+          <Text style={styles.primaryButtonText}>{t("continueEmail")}</Text>
         </TouchableOpacity>
-
-        {/* Divider */}
         <View style={styles.dividerRow}>
           <View style={styles.divider} />
-          <Text style={styles.orText}>Or</Text>
+          <Text style={styles.orText}>{t("or")}</Text>
           <View style={styles.divider} />
         </View>
-
-        {/* Google OAuth Button */}
         <TouchableOpacity
           style={[styles.googleButton, isLoading && { opacity: 0.7 }]}
           onPress={() => handleSocialAuth("oauth_google")}
@@ -68,16 +61,14 @@ export default function AuthWelcome() {
                 source={require("@/assets/google-icon.png")}
                 style={styles.googleIcon}
               />
-              <Text style={styles.googleText}>Continue with Google</Text>
+              <Text style={styles.googleText}>{t("continueGoogle")}</Text>
             </>
           )}
         </TouchableOpacity>
-
-        {/* Sign-In Footer */}
         <TouchableOpacity onPress={() => router.push("/(auth)/sign-in")}>
           <Text style={styles.footerText}>
-            Already have an account?{" "}
-            <Text style={styles.footerLink}>Login</Text>
+            {t("alreadyHaveAccount")}{" "}
+            <Text style={styles.footerLink}>{t("login")}</Text>
           </Text>
         </TouchableOpacity>
       </View>

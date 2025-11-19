@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   Keyboard,
@@ -21,25 +22,30 @@ import { z } from "zod";
 
 const { height } = Dimensions.get("window");
 
-const signinSchema = z.object({
-  emailAddress: z
-    .string()
-    .min(1, "Email is required")
-    .email("Invalid email address"),
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .min(8, "Password must be at least 8 characters"),
-  remember: z.boolean(),
-});
 
-type SigninFormData = z.infer<typeof signinSchema>;
 
 export default function SignInScreen() {
   const router = useRouter();
   const { signIn, setActive, isLoaded } = useSignIn();
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const { t } = useTranslation();
+
+
+  const signinSchema = z.object({
+    emailAddress: z
+      .string()
+      .min(1, t("emailRequired"))
+      .email(t("invalidEmail")),
+    password: z
+      .string()
+      .min(1, t("passwordRequired"))
+      .min(8, t("passwordMin")),
+    remember: z.boolean(),
+  });
+
+  type SigninFormData = z.infer<typeof signinSchema>;
+
 
   const {
     control,
@@ -104,17 +110,18 @@ export default function SignInScreen() {
               paddingBottom: height * 0.05,
             }}
           >
-            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.title}>{t("welcomeBack")}</Text>
+
 
             <View style={styles.form}>
-              {/* Email field */}
+
               <Controller
                 control={control}
                 name="emailAddress"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <>
                     <TextInput
-                      placeholder="Enter your email"
+                      placeholder={t("enterEmail")}
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
@@ -132,7 +139,6 @@ export default function SignInScreen() {
                 )}
               />
 
-              {/* Password field */}
               <Controller
                 control={control}
                 name="password"
@@ -140,7 +146,7 @@ export default function SignInScreen() {
                   <>
                     <View style={styles.passwordContainer}>
                       <TextInput
-                        placeholder="Password"
+                        placeholder={t("password")}
                         value={value}
                         onChangeText={onChange}
                         onBlur={onBlur}
@@ -172,7 +178,7 @@ export default function SignInScreen() {
                 )}
               />
 
-              {/* Remember me + Forgot password */}
+
               <View style={styles.rowBetween}>
                 <Controller
                   control={control}
@@ -196,7 +202,7 @@ export default function SignInScreen() {
                           color="#7BA78A"
                         />
                       )}
-                      <Text style={styles.rememberText}>Remember Me</Text>
+                      <Text style={styles.rememberText}>{t("rememberMe")}</Text>
                     </TouchableOpacity>
                   )}
                 />
@@ -204,14 +210,15 @@ export default function SignInScreen() {
                 <TouchableOpacity
                   onPress={() => router.push("/(auth)/forgot-password")}
                 >
-                  <Text style={styles.forgotText}>Forgot Password?</Text>
+                  <Text style={styles.forgotText}>{t("forgotPassword")}</Text>
+
                 </TouchableOpacity>
               </View>
 
-              {/* Clerk/Auth error */}
+
               {authError && <Text style={styles.errorText}>{authError}</Text>}
 
-              {/* Submit button */}
+
               <TouchableOpacity
                 style={[styles.button, isSubmitting && { opacity: 0.7 }]}
                 activeOpacity={0.9}
@@ -219,19 +226,21 @@ export default function SignInScreen() {
                 onPress={handleSubmit(onSubmit)}
               >
                 <Text style={styles.buttonText}>
-                  {isSubmitting ? "Signing In..." : "Sign In"}
+                  {isSubmitting ? t("signingIn") : t("signIn")}
                 </Text>
+
               </TouchableOpacity>
 
-              {/* Sign‑up footer */}
+
               <TouchableOpacity
                 onPress={() => router.push("/(auth)/sign-up")}
                 style={{ marginTop: 20 }}
               >
                 <Text style={styles.footerText}>
-                  Don’t have an account?
-                  <Text style={styles.footerLink}> Sign Up</Text>
+                  {t("dontHaveAccount")}
+                  <Text style={styles.footerLink}> {t("signUp")}</Text>
                 </Text>
+
               </TouchableOpacity>
             </View>
           </ScrollView>

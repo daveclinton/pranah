@@ -21,7 +21,7 @@ const LANGUAGES = [
 ];
 
 export default function LanguageSelectionScreen() {
-  const { t } = useTranslation(); // ✅ translation hook
+  const { t } = useTranslation(); 
   const router = useRouter();
   const [currentLang, setLanguage] = useLanguage();
   const [_, setIsFirstTime] = useIsFirstTime();
@@ -41,10 +41,7 @@ export default function LanguageSelectionScreen() {
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* 🔹 Title */}
         <Text style={styles.title}>{t("selectLanguage")}</Text>
-
-        {/* 🔹 Language Options */}
         {LANGUAGES.map((item) => (
           <TouchableOpacity
             key={item.code}
@@ -63,10 +60,9 @@ export default function LanguageSelectionScreen() {
                   currentLang === item.code && styles.selectedText,
                 ]}
               >
-                {t(item.nameKey)} {/* ✅ uses translation key */}
+                {t(item.nameKey)} 
               </Text>
             </View>
-
             <View
               style={[
                 styles.radioOuter,
@@ -77,10 +73,7 @@ export default function LanguageSelectionScreen() {
             </View>
           </TouchableOpacity>
         ))}
-
         <View style={{ height: 32 }} />
-
-        {/* 🔹 Get Started Button */}
         <TouchableOpacity
           style={styles.button}
           onPress={handleGetStarted}
@@ -88,8 +81,6 @@ export default function LanguageSelectionScreen() {
         >
           <Text style={styles.buttonText}>{t("getStarted")}</Text>
         </TouchableOpacity>
-
-        {/* 🔹 Footer (Agree Notice + Links) */}
         <Text style={styles.footerText}>{t("agreeNotice")}</Text>
         <View style={styles.footerLinks}>
           <Text style={styles.link}>{t("terms")}</Text>
@@ -101,7 +92,7 @@ export default function LanguageSelectionScreen() {
   );
 }
 
-/* ---------- Styles (unchanged) ---------- */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
