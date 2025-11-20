@@ -1,6 +1,45 @@
-import UnderDevelopmentScreen from "@/components/user-development";
-import React from "react";
+
+import {
+  BottomSheetModal,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
+import React, { useCallback, useRef } from "react";
+import { Button, StyleSheet, Text, View } from "react-native";
 
 export default function ChatScreen() {
-  return <UnderDevelopmentScreen />;
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log('handleSheetChanges', index);
+  }, []);
+  return <View>
+    <Button
+      onPress={handlePresentModalPress}
+      title="Present Modal"
+      color="black"
+    />
+    <BottomSheetModal
+      ref={bottomSheetModalRef}
+      onChange={handleSheetChanges}
+    >
+      <BottomSheetView style={styles.contentContainer}>
+        <Text>Awesome 🎉</Text>
+      </BottomSheetView>
+    </BottomSheetModal>
+  </View>;
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    backgroundColor: 'grey',
+  },
+  contentContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+});
