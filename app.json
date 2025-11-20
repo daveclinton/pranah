@@ -54,7 +54,17 @@
           },
           "imageWidth": 200
         }
-      ]
+      ],
+      "react-native-vision-camera",
+       [
+      "react-native-vision-camera",
+      {
+        "cameraPermissionText": "AQUA PRANNAH needs access to your Camera.",
+
+        "enableMicrophonePermission": true,
+        "microphonePermissionText": "AQUA PRANNAH needs access to your Microphone."
+      }
+    ]
     ],
     "experiments": {
       "typedRoutes": true,
