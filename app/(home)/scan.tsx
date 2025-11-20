@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
   Camera,
@@ -10,6 +11,9 @@ export default function InsectScanner() {
   const device = useCameraDevice('back');
   const { hasPermission, requestPermission } = useCameraPermission();
   const camera = useRef<Camera>(null);
+  const [isActive, setIsActive] = useState(true);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (!hasPermission) {
@@ -33,9 +37,31 @@ export default function InsectScanner() {
     );
   }
 
-  if (device == null) {
+  if (!device) {
     return <Text>Loading camera...</Text>;
   }
+
+  const handleCancel = () => {
+    setIsActive(false);
+    router.back();
+  };
+
+  const handleScan = async () => {
+    if (isCapturing) return;
+    setIsCapturing(true);
+
+    try {
+      const photo = await camera.current?.takePhoto({
+
+        flash: 'off',
+      });
+      console.log('Captured photo:', photo?.path);
+    } catch (error) {
+      console.error('Error capturing photo:', error);
+    } finally {
+      setIsCapturing(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -43,10 +69,9 @@ export default function InsectScanner() {
         ref={camera}
         style={StyleSheet.absoluteFill}
         device={device}
-        isActive={true}
+        isActive={isActive}
+        photo={true}
       />
-
-      {/* Overlay Frame */}
       <View style={styles.overlayContainer}>
         <View style={styles.scanArea}>
           <View style={[styles.border, styles.topLeft]} />
@@ -55,6 +80,24 @@ export default function InsectScanner() {
           <View style={[styles.border, styles.bottomRight]} />
         </View>
         <Text style={styles.instruction}>Align the insect inside the frame</Text>
+      </View>
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
+          <Text style={styles.buttonText}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleScan}
+          disabled={isCapturing}
+          style={[
+            styles.captureButton,
+            isCapturing && { opacity: 0.6 },
+          ]}
+        >
+          <Text style={styles.buttonText}>
+            {isCapturing ? 'Scanning...' : 'Scan'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -85,24 +128,9 @@ const styles = StyleSheet.create({
     height: 40,
     borderColor: '#00FF99',
   },
-  topLeft: {
-    top: -1,
-    left: -1,
-    borderLeftWidth: 4,
-    borderTopWidth: 4,
-  },
-  topRight: {
-    top: -1,
-    right: -1,
-    borderRightWidth: 4,
-    borderTopWidth: 4,
-  },
-  bottomLeft: {
-    bottom: -1,
-    left: -1,
-    borderLeftWidth: 4,
-    borderBottomWidth: 4,
-  },
+  topLeft: { top: -1, left: -1, borderLeftWidth: 4, borderTopWidth: 4 },
+  topRight: { top: -1, right: -1, borderRightWidth: 4, borderTopWidth: 4 },
+  bottomLeft: { bottom: -1, left: -1, borderLeftWidth: 4, borderBottomWidth: 4 },
   bottomRight: {
     bottom: -1,
     right: -1,
@@ -115,6 +143,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  buttonsContainer: {
+    position: 'absolute',
+    bottom: 60,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  cancelButton: {
+    backgroundColor: '#444',
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+  },
+  captureButton: {
+    backgroundColor: '#00FF99',
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+  },
+  buttonText: { color: '#000', fontWeight: '600', fontSize: 16 },
   permissionContainer: {
     flex: 1,
     backgroundColor: '#000',
