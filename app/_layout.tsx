@@ -20,7 +20,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
-/** ---------- App-level providers ---------- */
+
 function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -34,12 +34,10 @@ function AppProviders({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** ---------- Routing Logic ---------- */
+
 function RouterDecider() {
   const { isLoaded, isSignedIn } = useAuth();
   const [isFirstTime] = useIsFirstTime();
-
-  // Debug logs
   console.log({ isLoaded, isSignedIn, isFirstTime });
 
   if (!isLoaded) {
@@ -50,25 +48,24 @@ function RouterDecider() {
     );
   }
 
-  // 🟩 CASE 1: first time ever → go to onboarding (signed in or not)
   if (isFirstTime) {
     return <Redirect href="/(onboarding)" />;
   }
 
-  // 🟨 CASE 2: not signed in & not first time → send to auth
+ 
   if (!isSignedIn) {
     return <Redirect href="/(auth)" />;
   }
 
-  // 🟦 CASE 3: signed in & already finished onboarding → home
+
   return <Redirect href="/(home)" />;
 }
 
-/** ---------- Root Layout ---------- */
+
 export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      {/* While Clerk init runs */}
+
       <ClerkLoading>
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#C5FC61" />
@@ -78,8 +75,6 @@ export default function RootLayout() {
       <ClerkLoaded>
         <AppProviders>
           <RouterDecider />
-
-          {/* Define grouped routes */}
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen
@@ -104,7 +99,6 @@ export default function RootLayout() {
   );
 }
 
-/** ---------- Styles ---------- */
 const styles = StyleSheet.create({
   center: {
     flex: 1,
