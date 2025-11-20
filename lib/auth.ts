@@ -1,3 +1,5 @@
+import { expo } from "@better-auth/expo";
+import { betterAuth } from "better-auth";
 import * as SecureStore from "expo-secure-store";
 
 export interface TokenCache {
@@ -30,3 +32,13 @@ export const tokenCache = {
     }
   },
 };
+
+export const auth = betterAuth({
+  plugins: [expo()],
+  emailAndPassword: {
+    enabled: true, 
+  },
+  trustedOrigins: [
+    "aqua-pranna://*", 
+  ],
+});
